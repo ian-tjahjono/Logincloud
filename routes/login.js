@@ -48,9 +48,8 @@ router.post('/', bodyParser, (req, res) => {
 });
 
 //Get name of person who logged in
-router.get('/user', function (req, res) {
-    var nric = "S9812381D";
-    connection.query("SELECT * FROM covid19db.users where nric  = ?;", nric, function (err, rows, fields) {
+router.post('/user', bodyParser, function (req, res) {
+    connection.query("SELECT * FROM covid19db.users where nric  = ?;", req.body.nric, function (err, rows, fields) {
         if (err) throw err
         res.json(rows);
     })
