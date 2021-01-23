@@ -13,6 +13,10 @@ const connection = mysql.createConnection({
 
 connection.connect();
 
+/*
+********************************* LOGIN API *********************************************************
+*/
+
 //Check if user details are present and correct in user database
 router.post('/', bodyParser, (req, res) => {
     let name;
@@ -53,6 +57,55 @@ router.post('/user', bodyParser, function (req, res) {
         if (err) throw err
         res.json(rows);
     })
+})
+
+/*
+**************************** BOOKING API *********************************************************
+*/
+
+router.post('/home', bodyParser, function (req, res) {
+    connection.query("SELECT * FROM covid19db.booking where nric = ?;", req.body.nric, function (err, rows, fields) {
+        if (err) throw err
+        res.json(rows);
+    })
+})
+
+router.delete('/home/:id', function (req, res) {
+    connection.query("DELETE FROM covid19db.booking WHERE id = ?", [req.params.id], function (err, rows, fields) {
+        if (err) throw err
+
+        if (rows.affectedRows === 1) {
+            res.status(204);
+            res.end();
+        }
+        else {
+            res.status(404);
+            res.json({ error: "Appointment not found!" });
+        }
+    });
+})
+
+router.put('/:id', bodyParser, function (req, res) {
+    connection.query("UPDATE `covid19db`.`booking` SET `name` = ?, `date` = ?, `category` = ?, `location` = ?  WHERE `id` = ?;", [req.body.name, req.body.date, req.body.category, req.body.location, req.params.id], function (err, rows, fields) {
+        if (err) throw err
+
+        if (rows.changedRows === 1) {
+            res.status(200).json({ message: "Appointment updated!" });
+        }
+        else {
+            res.status(404);
+            res.json({ error: "Appointment not found!" });
+        }
+    });
+})
+
+router.post('/home/booking', bodyParser, function (req, res) {
+    connection.query('INSERT INTO `covid19db`.`booking` (`name`, `nric`, `category`, `location`, `date`, `time`) VALUES (?,?,?,?,?,?);', [req.body.name, req.body.nric, req.body.category, req.body.location, req.body.date, req.body.time], function (error, results, fields) {
+        if (error) throw error;
+
+        res.status(201);
+        res.json({ message: "Appointment has been booked!" });
+    });
 })
 
 module.exports = router
